@@ -1,5 +1,6 @@
 # Thraxx session routines
 # $Id$
+
 use strict;
 
 use constant SESSION_MULT_ALLOW		=> 1;
@@ -18,26 +19,61 @@ sub _session_init
 # Front-runner
 sub session_auth
 {
+	my ($this, $user_id, $password) = @_;
+
+	# Check for concurrent sessions
+	if (my @sessions = $this->session_search)
+	{
+		if ($this->{simult_sessions} == SESSION_MULT_ALLOW)
+		{
+			my $ret = $this->user_auth($user_id, $password);
+			return $ret if $ret != E_NONE();
+			return $this->session_create($user_id);
+		} elsif ($this->{simult_sessions} == SESSION_MULT_CLEAR) {
+			foreach my $session (@sessions)
+			{
+# XXX: change to DELETE ... WHERE id = a or id = b or id = c ...
+				$this->session_remove($session->{id});
+			}
+			my $ret = $this->user_auth($user_id, $password);
+			return $ret if $ret != E_NONE();
+			return $this->session_create($user_id);
+		} elsif ($this->{simult_sessions} == SESSION_MULT_DISALLOW) {
+			return E_SESSION_EXIST();
+		} else {
+			$this->throw("Unknown action for handling simultaneous logons; " .
+					"action: $this->{simult_sessions}");
+		}
+	} else {
+		my $ret = $this->user_auth($user_id, $password);
+		return $ret if $ret != E_NONE();
+		return $this->session_create($user_id);
+	}
 }
 
 sub session_create
 {
 	my ($this, $user_id) = @_;
 	return E_USER_EXIST() unless $this->user_exists($user_id);
-	my $id = $this->__gen_key();
-	$this->{dbh}->query("	INSERT INTO
-					thraxx_sessions
-				(
-					user_id,
-					session_key
-				) VALUES (
-					$user_id,
-					'$id'
-				)", DB_NULL);
-	return $this->{dbh}->last_insert_id;
+	my $dbh = $this->{dbh};
+	my $key = $this->_session_gen_key();
+	my $esc_key = $dbh->prepare_str($key, SQL_REG);
+	$dbh->query("	INSERT INTO
+				thraxx_sessions
+			(
+				user_id,
+				session_key
+			) VALUES (
+				$user_id,
+				'$esc_key'
+			)", DB_NULL);
+	return {
+			session_id => $dbh->last_insert_id,
+			session_key => $key,
+		};
 }
 
-sub __gen_key
+sub _session_gen_key
 {
 	my ($this) = @_;
 	my $size = SESSION_KEY_LEN();
