@@ -84,8 +84,7 @@ sub user_update
 	my $password = $dbh->prepare_str($this->crypt($user->{password}), SQL_REG);
 	my $ufields = "";
 	my ($field_id);
-	while (($field_id) = each %{ $this->{user_fields} })
-	{
+	while (($field_id) = each %{ $this->{user_fields} }) {
 		$ufields .= " ud_$field_id = '$user->{$field_id}', ";
 	}
 	$dbh->query("	UPDATE
