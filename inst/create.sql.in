@@ -7,12 +7,14 @@ CREATE TABLE
 	thraxx_users
 (
 	user_id			INT			NOT NULL	AUTO_INCREMENT,
-	password		CHAR(@@PASS_LEN@@)      NOT NULL,
+	username		CHAR(@@USERNAME_LEN@@)	NOT NULL,
+	password		CHAR(@@PASSWORD_LEN@@)	NOT NULL,
 
 /*	last_logon		TIMESTAMP, */
 
 	PRIMARY KEY(user_id),
-	UNIQUE(user_id)
+	UNIQUE(user_id),
+	UNIQUE(username)
 );
 
 /*
@@ -47,7 +49,7 @@ CREATE TABLE
 	PRIMARY KEY(session_id),
 	UNIQUE(session_id),
 	INDEX(user_id)
-	
+
 	/* This field is if installations will allow multiple
 	   logons. Note that this is currently being taken
 	   care of manually. */
