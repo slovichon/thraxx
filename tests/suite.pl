@@ -6,19 +6,18 @@ use WASP;
 use DBH qw(:all);
 use DBH::MySQL;
 
-sub ok()
-{
-	print "\033[1;40;32mTest succeeded\033[1;0;0m\n\n";
+
+
+sub _ {
+	if ($_[0]) {
+		print "\033[1;40;32mTest succeeded\033[1;0;0m\n\n";
+	} else {
+		print "\033[1;40;31mTest failed!\033[1;0;0m\n\n";
+		die;
+	}
 }
 
-sub fail()
-{
-	print "\033[1;40;31mTest failed!\033[1;0;0m\n\n";
-	die;
-}
-
-sub princ
-{
+sub test {
 	print "\033[1;40;34m", @_, ":\033[1;0;0m\n";
 }
 
@@ -33,19 +32,21 @@ my ($s, $p, $i, $j, $k);
 
 ########################################################################
 # crypt.inc
-princ "Random alphanumeric characters";
+test "Random alphanumeric characters";
 eval {
 print $t->rand_str(25, Thraxx::RAND_VIS_ALNUM), "\n"	for 1 .. 3;
-}; $@ ? fail : ok;
+};
+_ !$@;
 
-princ "Random non-quote characters";
+test "Random non-quote characters";
 eval {
 print $t->rand_str(25, Thraxx::RAND_VIS_NQ), "\n"	for 1 .. 3;
-}; $@ ? fail : ok;
+};
+_ !$@;
 
 my $key;
 
-princ "Generating keys";
+test "Generating keys";
 eval {
 for (1 .. 3)
 {
@@ -57,14 +58,15 @@ for (1 .. 3)
 		print "[type $type]: $key\n";
 	}
 }
-}; $@ ? fail : ok;
+};
+_ $@;
 
 $t->{crypt_key} = $key;
 
 my $data = $t->rand_str(40, Thraxx::RAND_VIS_ALNUM);
 my $enc = $t->crypt($data);
 
-princ "Encrypting data";
+test "Encrypting data";
 print "data: $data\nenc:  $enc\n";
 
 my $copy = $data;
@@ -72,7 +74,7 @@ my $enc2 = $t->crypt($copy);
 
 print "copy: $copy\nenc2: $enc2\n";
 
-$enc eq $enc2 ? ok : fail;
+_ $enc eq $enc2;
 
 ########################################################################
 # isr.inc
@@ -82,15 +84,15 @@ $enc eq $enc2 ? ok : fail;
 ########################################################################
 # misc.inc
 
-princ "in_array()";
+test "in_array()";
 print "5 in (", 2..7, ") and 1 not in (", 2..7 ,")\n";
-Thraxx::in_array(5, [2 .. 7]) && !Thraxx::in_array(1, [2 .. 7]) ? ok : fail;
+_ Thraxx::in_array(5, [2 .. 7]) && !Thraxx::in_array(1, [2 .. 7]);
 
-princ "in_hash()";
+test "in_hash()";
 print "5 in (a=>1, b=>5) and 1 not in (a=>6, b=>2, c=>7)\n";
-Thraxx::in_hash(5, {a=>1, b=>5}) && !Thraxx::in_hash(1, {a=>6, b=>2, c=>7}) ? ok : fail;
+_ Thraxx::in_hash(5, {a=>1, b=>5}) && !Thraxx::in_hash(1, {a=>6, b=>2, c=>7});
 
-princ "slurp_file()";
+test "slurp_file()";
 $s="this \nis\n my \nfavorite string";
 $k = $s;
 $k =~ s/\n/\\n/g;
@@ -104,70 +106,71 @@ $p = $t->slurp_file("out");
 $k = $p;
 $k =~ s/\n/\\n/g;
 print "Reading from file: $k\n";
-$s eq $p ? ok : fail;
+_ $s eq $p;
 
-princ "write_config()";
+test "write_config()";
 eval {
 $t->write_config;
-}; $@ ? fail : ok;
+};
+_ !$@;
 
 # Skip flatten*
 
 ########################################################################
 # users.inc
 
-princ "Creating user";
+test "Creating user";
 my ($err, $uerr) = $t->user_add({password=>"hi there"});
 my $user_id = $d->last_insert_id;
 print "Errors: $err\nUser errors: @$uerr\nUser ID: $user_id\n";
-$err == Thraxx::E_NONE() && @$uerr == 0 ? ok : fail;
+_ $err == Thraxx::E_NONE() && @$uerr == 0;
 
-princ "Changing password";
+test "Changing password";
 ($err, $uerr) = $t->user_update({user_id=>$user_id, password=>"new pass"});
 print "Errors: $err\nUser errors: @$uerr\n";
-$err == Thraxx::E_NONE() && @$uerr == 0 ? ok : fail;
+_ $err == Thraxx::E_NONE() && @$uerr == 0;
 
-princ "user_exists()";
-$t->user_exists($user_id) ? ok : fail;
-$t->user_exists(-1) ? fail : ok;
-$t->user_exists(5) ? fail : ok;
+test "user_exists()";
+_ $t->user_exists($user_id);
+_ $t->user_exists(-1);
+_ $t->user_exists(5);
 
-princ "user_auth()";
-($k=$t->user_auth($user_id, "new pass")) ? (print($k),fail) : ok;
-($k=$t->user_auth($user_id, "bad pass")) ? ok : (print($k),fail);
+test "user_auth()";
+_ !$t->user_auth($user_id, "new pass");
+_ $t->user_auth($user_id, "bad pass");
 
 ########################################################################
 # str.inc
 
-princ "encode_html()";
+test "encode_html()";
 $s = qq!<html>my "string" & is here</html>!;
 $p = $t->encode_html($s);
 $k = qq!&lt;html&gt;my &quot;string&quot; &amp; is here&lt;/html&gt;!;
 print "string: $s\n";
 print "encoded: $p\n";
-$p eq $k ? ok : fail;
+_ $p eq $k;
 
 # str_parse(), oh boy
 
 ########################################################################
 # sessions.inc
 
-princ "Creating session";
+test "Creating session";
 my $session = $t->session_create($user_id);
 print "Session ID: $session->{session_id}\nSession key: $session->{session_key}\n";
-ref $session eq "HASH" ? ok : fail;
+_ ref $session eq "HASH";
 
-princ "Session size";
-length($session->{session_key}) == Thraxx::SESSION_KEY_LEN() ? ok : fail;
+test "Session size";
+_ length($session->{session_key}) == Thraxx::SESSION_KEY_LEN();
 
-princ "session_exists()";
-$t->session_exists($session->{session_id}) ? ok : fail;
+test "session_exists()";
+_ $t->session_exists($session->{session_id});
 
-princ "Removing session";
-$t->session_remove($session->{session_id}) ? fail : ok;
+test "Removing session";
+_ !$t->session_remove($session->{session_id});
 
-princ "Removing user";
-$t->user_remove($user_id) ? fail : ok;
+test "Removing user";
+_ !$t->user_remove($user_id);
 
 ########################################################################
 # udf.inc
