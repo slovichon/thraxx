@@ -179,4 +179,11 @@ _ !$t->user_remove($user_id);
 # Note: this will be tested with custom fields
 # in users.inc and sessions.inc tests.
 
+=cut
+Remaining tests:
+	skip_init => 0
+	user fields building/changing/rebuilding/etc
+
+=cut
+
 exit 0;
