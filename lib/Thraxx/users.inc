@@ -12,7 +12,8 @@ sub _user_init
 	# Error constants
 	$g->add("E_USER_EXIST");	# Non-existant user
 
-	$g->add("E_USER_PASS");		# Bad password
+	$g->add("E_USER_PASSWORD");	# Bad password
+	$g->add("E_USER_USERNAME");	# Bad username
 }
 
 sub user_add
@@ -22,7 +23,24 @@ sub user_add
 	my $dbh = $this->{dbh};
 	my $err = E_NONE();
 	# Validate data
-	$err |= E_USER_PASS() unless $user->{password};
+	$err |= E_USER_PASSWORD() unless $user->{password};
+	# The username can only consist of a-zA-Z0-9_ so
+	# there is no need to SQL-escape it.
+	my $username = $user->{username};
+#	my $username = $dbh->prepare_str($user->{username}, SQL_REG);
+	# We should range from 5 <or minimum> to Thraxx::USERNAME_LEN
+	if ($user->{username} =~ /^[a-zA-Z0-9_]{5,}$/) {
+		if ($dbh->query("	SELECT
+						user_id
+					FROM
+						thraxx_users
+					WHERE
+						username = '$username' ", DB_COL)) {
+			$err |= E_USER_EXIST()
+		}
+	} else {
+		$err |= E_USER_USERNAME();
+	}
 	# Validate/Prepare user-defined fields data
 	my $uerr = $this->udf_validate(FLD_USER(), $user);
 	return ($err, $uerr) if $err != E_NONE() || @$uerr;
@@ -33,17 +51,19 @@ sub user_add
 	my ($field_id);
 	while (($field_id) = each %{ $this->{user_fields} })
 	{
-		$sql_fields .= " $field_id, ";
+		$sql_fields .= " ud_$field_id, ";
 		$sql_values .= " '$user->{$field_id}', ";
 	}
 	$dbh->query("	INSERT INTO
 				thraxx_users
 			(
 				$sql_fields
-				password
+				password,
+				username
 			) VALUES (
 				$sql_values
-				'$password'
+				'$password',
+				'$username'
 			)", DB_NULL);
 	return (E_NONE(), []);
 }
@@ -56,7 +76,7 @@ sub user_update
 	return (E_USER_EXIST(), []) unless $this->user_exists($user->{user_id});
 	my $err = E_NONE();
 	# Validate data
-	$err |= E_USER_PASS() unless $user->{password};
+	$err |= E_USER_PASSWORD() unless $user->{password};
 	# Validate/Prepare user-defined fields data
 	my $uerr = $this->udf_validate(FLD_USER(), $user);
 	return ($err, $uerr) if $err != E_NONE() or @$uerr;
@@ -92,31 +112,34 @@ sub user_remove
 
 sub user_exists
 {
-	my ($this, $user_id) = @_;
-	return FALSE() unless $user_id && $user_id =~ /^\d+$/;
+	my ($this) = shift;
+	my ($field, $op, $value);
+	if (@_ == 1) {
+		# Assume user ID
+		$field = "user_id";
+		$op = "=";
+		$value = $_[0];
+		return FALSE() unless $value && $value =~ /^\d+$/;
+	} else {
+		my %spec = @_;
+		($field, $op, $value) = @spec{qw(field op value)};
+		$value = $this->isr_check_field("thraxx_users", $field, $op, $value);
+		return FALSE() unless defined $value;
+	}
 	return $this->{dbh}->query("	SELECT
-					user_id
-				FROM
-					thraxx_users
-				WHERE
-					user_id = $user_id", DB_COL);
+						user_id
+					FROM
+						thraxx_users
+					WHERE
+						$field $op $value", DB_COL);
 }
 
 sub user_auth
 {
-	my ($this, $user_id, $password) = @_;
-	return E_USER_EXIST() unless $this->user_exists($user_id);
-	my $dbh = $this->{dbh};
-	$password = $dbh->prepare_str($this->crypt($password), SQL_REG);
-	my $ret = $dbh->query("	SELECT
-					user_id
-				FROM
-					thraxx_users
-				WHERE
-					user_id = $user_id
-				AND	password = '$password' ", DB_COL);
-	return E_USER_PASS() unless $ret;
-	return E_NONE();
+	my ($this, $username, $password) = @_;
+	my $enc = $this->crypt($password);
+	my $user = $this->user_get(field=>"username", op=>"=", value=>$username);
+	return ref $user eq "HASH" && $user->{password} eq $enc;
 }
 
 # sub user_get {
@@ -127,15 +150,29 @@ sub user_auth
 #					value 	=> $user_id }]] );
 # }
 
+# user_get(field => value)
+# user_get(user_id) (defaults to id for single arg)
 sub user_get {
-	my ($this, $user_id) = @_;
-	return E_USER_EXIST() unless $this->user_exists($user_id);
-	return $this->{dbh}->query("	SELECT
-						*
-					FROM
-						thraxx_users
-					WHERE
-						user_id = $user_id", DB_ROW);
+	my ($this) = shift;
+	my ($field, $op, $value);
+	if (@_ == 1) {
+		$field = "user_id";
+		$op = "=";
+		$value = $_[0];
+		return E_USER_EXIST() unless $this->user_exists($value);
+	} else {
+		my %spec = @_;
+		($field, $op, $value) = @spec{qw(field op value)};
+		$value = $this->isr_check_field("thraxx_users", $field, $op, $value);
+		return E_MISC() unless defined $value;
+	}
+	my %user = $this->{dbh}->query("	SELECT
+							*
+						FROM
+							thraxx_users
+						WHERE
+							$field $op $value", DB_ROW);
+	return %user ? \%user : E_USER_EXIST();
 }
 
 sub user_search {
