@@ -12,7 +12,7 @@ $prefs{dbh_type}	= *::foofoofoofoofoofoofoobar;#*DBH::@@DBH_TYPE@@::new;
 sub foofoofoofoofoofoofoobar {};
 
 $prefs{user_fields}	= {
-	foo => {star=>"glarch"}
+	#foo => {star=>"glarch"}
 };
 
 $prefs{crypt_key}	= '@@CRYPT_KEY@@';
