@@ -1,0 +1,55 @@
+-- create.sql.in - Thraxx SQL setup routines
+-- $Id$
+
+CREATE TABLE
+        loginsys_users
+(
+        user_id         INT                     NOT NULL        AUTO_INCREMENT,
+        password        CHAR(@@PASS_LEN@@)      NOT NULL,
+
+        last_logon      TIMESTAMP,
+
+        PRIMARY KEY(user_id),
+        UNIQUE(user_id)
+);
+
+/*
+        -- Perhaps we should create a history/log of logons?
+
+CREATE TABLE
+        loginsys_logons
+(
+        user_id         INT                     NOT NULL,
+
+        -- duration in seconds
+        duration        INT                     NOT NULL,
+        create_date     TIMESTAMP,
+
+        INDEX(user_id)
+);
+*/
+
+CREATE TABLE
+        loginsys_sessions
+(
+        session_id      INT                     NOT NULL        AUTO_INCREMENT,
+        user_id         INT                     NOT NULL,
+                
+        session_key     CHAR(@@SESS_KEY_LEN@@)  NOT NULL,
+
+        create_date     TIMESTAMP,
+        act_ts          TIMESTAMP,
+
+        -- is_hidden    BOOL                    NOT NULL                                DEFAULT 0,
+
+        PRIMARY KEY(session_id),
+        UNIQUE(session_id),
+        INDEX(user_id)--,
+        -- UNIQUE(user_id)
+);
+
+CREATE TABLE
+        loginsys_config
+(
+        crypt_key       CHAR(@@CRYPT_KEY_LEN@@),
+);
