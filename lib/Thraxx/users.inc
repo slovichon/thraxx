@@ -1,6 +1,7 @@
 # Thraxx user routines
 # $Id$
 
+use DBH qw(:all);
 use strict;
 
 sub _user_init
@@ -116,6 +117,77 @@ sub user_auth
 				AND	password = '$password' ", DB_COL);
 	return E_USER_PASS() unless $ret;
 	return E_NONE();
+}
+
+# sub user_get {
+#	my ($this, $user_id) = @_;
+#	return 	$this->user_search(
+#			criteria => [[{ field 	=> user_id,
+#					op	=> "=",
+#					value 	=> $user_id }]] );
+# }
+
+sub user_get {
+	my ($this, $user_id) = @_;
+	return E_USER_EXIST() unless $this->user_exists($user_id);
+	return $this->{dbh}->query("	SELECT
+						*
+					FROM
+						thraxx_users
+					WHERE
+						user_id = $user_id", DB_ROW);
+}
+
+sub user_search {
+	my ($this, %prefs) = @_;
+	# Determine offset
+	my $offset = $prefs{offset} || 0;
+	$offset = 0 unless $offset =~ /^\d+$/;
+	# Determine result limit (check bounds)
+	my $limit = $prefs{limit} || 0;
+	$limit = 0 unless $limit =~ /^\d+$/;
+	$limit = 0 if $limit > $this->{XXX_result_limit};
+	if ($limit) {
+		# Try user preference
+		# Try default preference
+	}
+	# Build database query
+	my $where = "";
+	if (ref $prefs{criteria} eq "ARRAY" && @{ $prefs{criteria} }) {
+		$where .= " WHERE ";
+		my ($ands, $criteria, $val);
+		# foreach `and' group in the `or' groups
+		foreach $ands (@{ $prefs{criteria} }) {
+			$where .= " ( ";
+			foreach $criteria (@$ands) {
+				if (defined($val = $this->isr_check_field(
+					"babs_stories", $criteria->{field},
+					$criteria->{op}, $criteria->{value}))) {
+					$where .= sprintf " %s %s %s AND ",
+							$criteria->{field},
+							$criteria->{op}, $val;
+				}
+			}
+			$where =~ s/ AND $/) OR /;
+		}
+		$where =~ s/ OR $//;
+	}
+	# Query database
+	my $dbh = $this->{dbh};
+	$dbh->query("	SELECT
+				*
+			FROM
+				babs_stories
+			$where
+			LIMIT
+				$limit,
+				$offset", DB_ROWS);
+	my @stories = ();
+	my %story;
+	while (%story = $dbh->fetch_row) {
+		push @stories, {%story};
+	}
+	return \@stories;
 }
 
 return TRUE();
