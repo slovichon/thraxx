@@ -56,8 +56,9 @@ sub construct
 	my ($class, %prefs) = @_;
 
 	# Error-check our environment
-	die("No WASP object specified")		unless $prefs{wasp};
-	$prefs{wasp}->throw("No DBH specified")	unless $prefs{dbh};
+	die("No WASP object specified")				unless $prefs{wasp};
+	$prefs{wasp}->throw("No DBH specified")			unless $prefs{dbh};
+	$prefs{wasp}->throw("No configuration file specified")	unless $prefs{config};
 
 	# Set other properties
 	$prefs{error_const_group} = AutoConstantGroup->new;
@@ -69,9 +70,9 @@ sub construct
 		tie %prefs, 'Thraxx::Prefs', %prefs;
 
 		# Fill up %prefs
-		my ($path) = ($INC{'Thraxx.pm'} =~ m!(.*/)!);
-		eval slurp_file($prefs{wasp}, "$path/thraxx-config.inc") or
-			$prefs{wasp}->throw("Thraxx: cannot read config file: $@");
+		#my ($path) = ($INC{'Thraxx.pm'} =~ m!(.*/)!);
+		eval slurp_file($prefs{wasp}, $prefs{config}) or
+			$prefs{wasp}->throw("Error in reading configuration file: $@");
 	}
 
 	my $this = bless \%prefs, ref($class) || $class;
