@@ -142,14 +142,15 @@ use constant STR_ALL	=> STR_HTML | STR_URL;
 sub str_parse
 {
 	my ($this, $str, $flags) = @_;
-	
+	$flags = STR_ALL() unless defined $flags;
+
 	$str = $this->encode_html($str);
 
-	if ($flags & STR_HTML)
+	if ($flags & STR_HTML())
 	{
 		# We should probably make an option including leaving
 		# alone, blocking, and truncating.
-		
+
 		# Allowed HTML
 		my $allowed = lc join "|", @{ $this->{story_allowed_html} };
 		$str =~	s{

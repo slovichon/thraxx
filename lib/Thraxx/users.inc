@@ -17,6 +17,7 @@ sub _user_init
 sub user_add
 {
 	my ($this, $user) = @_;
+	return E_MISC() unless ref $user eq "HASH";
 	my $dbh = $this->{dbh};
 	my $err = E_NONE();
 	# Validate data
@@ -25,7 +26,7 @@ sub user_add
 	my $uerr = $this->udf_validate(FLD_USER(), $user);
 	return ($err, $uerr) if $err != E_NONE() || @$uerr;
 	# Prepare data
-	my $password = $dbh->prepare_str($user->{password}, SQL_REG);
+	my $password = $dbh->prepare_str($this->crypt($user->{password}), SQL_REG);
 	my $sql_fields = "";
 	my $sql_values = "";
 	my ($field_id);
@@ -49,6 +50,7 @@ sub user_add
 sub user_update
 {
 	my ($this, $user) = @_;
+	return E_MISC() unless ref $user eq "HASH";
 	my $dbh = $this->{dbh};
 	return (E_USER_EXIST(), []) unless $this->user_exists($user->{user_id});
 	my $err = E_NONE();
@@ -58,7 +60,7 @@ sub user_update
 	my $uerr = $this->udf_validate(FLD_USER(), $user);
 	return ($err, $uerr) if $err != E_NONE() or @$uerr;
 	# Prepare data
-	my $password = $dbh->prepare_str($user->{password}, SQL_REG);
+	my $password = $dbh->prepare_str($this->crypt($user->{password}), SQL_REG);
 	my $ufields = "";
 	my ($field_id);
 	while (($field_id) = each %{ $this->{user_fields} })

@@ -44,7 +44,8 @@ sub udf_validate
 	{
 		if ($field->{validation})
 		{
-			unless ($data->{$field_id} =~ $field->{validation})
+			unless ($data->{$field_id} &&
+				$data->{$field_id} =~ $field->{validation})
 			{
 				if ($field->{required})
 				{

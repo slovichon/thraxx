@@ -80,7 +80,7 @@ sub _session_gen_key
 	my $id;
 	# Make sure the session identifier doesn't already exist
 	do {
-		$id = $this->random_str($size, RAND_VIS_ALNUM());
+		$id = $this->rand_str($size, RAND_VIS_ALNUM());
 	} while ($this->session_exists($id));
 	return $id;
 }
@@ -90,10 +90,11 @@ sub session_remove
 	my ($this, $id) = @_;
 	return E_SESSION_EXIST() unless $this->session_exists($id);
 	$id = $this->{dbh}->prepare_str($id, SQL_REG);
-	$this->{dbh}->query("	DELETE FROM
-					thraxx_sessions
-				WHERE
-					session_id = '$id'", DB_NULL);
+	my $ret = $this->{dbh}->query("	DELETE FROM
+						thraxx_sessions
+					WHERE
+						session_id = $id", DB_NULL);
+	return $ret ? E_NONE() : E_SESSION_EXIST();
 }
 
 sub session_search
@@ -105,7 +106,7 @@ sub session_search
 				*
 			FROM
 				thraxx_sessions ";
-	
+
 	if (@rules)
 	{
 		$sql .= " WHERE ";
@@ -131,7 +132,7 @@ sub session_search
 		}
 		$sql .= " ( " . join(" ) OR (", @ands) . " ) ";
 	}
-	
+
 	my @sessions = ();
 	$this->{dbh}->query($sql, DB_ROWS);
 	my %session;
@@ -148,14 +149,13 @@ sub session_search
 sub session_exists
 {
 	my ($this, $id) = @_;
-	my $size = SESSION_KEY_LEN();
-	return FALSE unless $id =~ /^[a-zA-Z0-9]{$size}$/;
+	return FALSE() unless $id && $id =~ /^\d+$/;
 	return $this->{dbh}->query("	SELECT
 						session_id
 					FROM
 						thraxx_sessions
 					WHERE
-						session_id = '$id'", DB_COL);
+						session_id = $id", DB_COL);
 }
 
 # sub sessions
@@ -168,10 +168,10 @@ sub sessions
 {
 	my ($this) = @_;
 	my $dbh = $this->{dbh};
-	$dbh->query("	SELECT
-				*
-			FROM
-				thraxx_sessions", DB_ROWS);
+	return $dbh->query("	SELECT
+					*
+				FROM
+					thraxx_sessions", DB_ROWS);
 }
 
 return TRUE();
