@@ -1,6 +1,7 @@
 # Thraxx internal structure representation routines
 # $Id$
 
+use DBH qw(:all);
 use strict;
 
 use constant ISR_TYPE_STR => 1;
