@@ -61,7 +61,7 @@ CREATE TABLE
 	thraxx_config
 (
 	/* User-defined fields signature/fingerprint */
-	user_sig	TINYTEXT,
+	user_fields_sig	TINYTEXT,
 
 	/* Last modification date */
 	mod_date	TIMESTAMP,
