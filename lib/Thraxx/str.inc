@@ -14,8 +14,8 @@ sub encode_html
 		'>' => "gt",
 		'&' => "amp",
 	);
-	my $c = qr![^a-zA-Z0-9_`=~\!@#\$%^*()_+\[\]{};:\|.\\,/-]!;
-	$data =~ s/$c/'$' . (exists $tbl{$&} ? $tbl{$&} : "#" . ord($&)) . ";"/ge;
+	my $c = qr![^a-zA-Z0-9_`=~\!@#\$%^*()_+\[\]{};:\|.\\,/ -]!;
+	$data =~ s/$c/"&" . (exists $tbl{$&} ? $tbl{$&} : "#" . ord($&)) . ";"/ge;
 	return $data;
 }
 
