@@ -128,7 +128,7 @@ sub FETCH
 sub STORE
 {
 	my ($this, $k, $v) = @_;
-	# "Type"-checking?
+	# Value-type and directive name checking?
 	$this->{$k} = $v;
 }
 
