@@ -26,7 +26,7 @@ sub mydie {
 my $w = WASP->new;
 $w->die(1);
 $w->handler(\&mydie);
-my $d = DBH::MySQL->new(host=>"12.227.108.231", username=>"thraxx",
+my $d = DBH::MySQL->new(host=>"127.0.0.1", port=>"3306", username=>"thraxx",
 		password=>"lNBDOD92Pec", database=>"thraxx",
 		wasp=>$w);
 my $t = Thraxx->construct(wasp=>$w, dbh=>$d, skip_init=>1, config=>"thraxx-config.inc");
@@ -65,6 +65,7 @@ eval {
 _ !$@;
 
 $t->{crypt_key} = $key;
+print "Setting crypto key to $key\n\n";
 
 my $data = $t->rand_str(40, Thraxx::RAND_VIS_ALNUM);
 my $enc = $t->crypt($data);
