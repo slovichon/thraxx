@@ -63,6 +63,7 @@ sub construct
 
 	# Set other properties
 	$prefs{error_const_group} = AutoConstantGroup->new;
+	$prefs{error_const_group}->add("E_MISC");	# Miscellaneous errors
 
 	unless (tied %prefs)
 	{
