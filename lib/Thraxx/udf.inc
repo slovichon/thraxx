@@ -32,6 +32,12 @@ sub udf_validate
 	# in hopes that the user will not multiply
 	# submit data, correcting errors only one
 	# at a time.
+	#
+	# This setup requires that if a field is
+	# required and does not provide a
+	# validation pattern (implying a non-empty
+	# field), the `validation' value must take
+	# on qr//;
 	my ($field_id, $field);
 	while (($field_id, $field) = each %{ $this->{$map{$type}} })
 	{
@@ -47,9 +53,17 @@ sub udf_validate
 				}
 			}
 		}
+
+		# No need in preparing data if an
+		# error occurred.
+		unless (@errs)
+		{
+			$data->{$field_id} = $this->str_parse(
+				$data->{$field_id}, $field->{parse});
+		}
 	}
 
-	return @errs;
+	return \@errs;
 }
 
 sub udf_update
