@@ -13,7 +13,7 @@ sub isr_check_field
 
 	my $num = sub { $_[0] && $_[0] =~ /^\d+$/ ? $_[0] : 0 };
 
-	my %ops = {
+	my %ops = (
 		ISR_TYPE_NUM()	=> {
 			'='	=> $num,
 			'<'	=> $num, 
@@ -23,15 +23,16 @@ sub isr_check_field
 			'<>'	=> $num,
 		},
 		ISR_TYPE_STR()	=> {
-			'LIKE'	=> sub { q(') . $this->{dbh}->prepare_str($_[0], SQL_WILD) . q(') },
-			'='	=> sub { q(') . $this->{dbh}->prepare_str($_[0], SQL_REG)  . q(') },
+			'LIKE'	=> sub { "'".$this->{dbh}->prepare_str($_[0], SQL_WILD)."'" },
+			'='	=> sub { "'".$this->{dbh}->prepare_str($_[0], SQL_REG) ."'" },
 		},
-	};
+	);
 
 	my %fields = (
 		thraxx_users => {
 			user_id		=> ISR_TYPE_NUM,
 			password	=> ISR_TYPE_STR,
+			username	=> ISR_TYPE_STR,
 		},
 		thraxx_sessions => {
 			session_id	=> ISR_TYPE_NUM,
