@@ -1,0 +1,7 @@
+add session fields?
+check/prohibit extra fields argued to  user_add?
+restrictions on password simplicity/length?
+create a constant creator?
+	my $t = Thraxx->new;
+	my $g = $t->const_group_create();
+	$t->register_constant("E_USER_*", $g);
