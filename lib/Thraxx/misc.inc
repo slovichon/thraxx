@@ -68,6 +68,7 @@ sub write_config
 			";\n";
 	}
 
+	local *CONFIG;
 	if (open CONFIG, "> $file")
 	{
 		print CONFIG <<EOF;
