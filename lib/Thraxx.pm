@@ -1,4 +1,4 @@
-# Thraxx.pm - universal login library
+# Thraxx - universal login library - core routines
 # $Id$
 package Thraxx;
 

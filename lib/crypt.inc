@@ -1,4 +1,4 @@
-# crypt.inc - Thraxx crypto routines
+# Thraxx crypto routines
 # $Id$
 
 use constant RAND_VIS_NQ => 1;

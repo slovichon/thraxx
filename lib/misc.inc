@@ -1,4 +1,4 @@
-# misc.inc - Thraxx miscellaneous routines
+# Thraxx miscellaneous routines
 # $Id$
 
 sub in_array

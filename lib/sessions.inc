@@ -1,4 +1,4 @@
-# sessions.inc - Thraxx session routines
+# Thraxx session routines
 # $Id$
 
 use constant SESSION_MULT_ALLOW		=> 1;

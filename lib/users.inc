@@ -1,4 +1,4 @@
-# users.inc - Thraxx user routines
+# Thraxx user routines
 # $Id$
 
 use constant E_USER_EXIST => (001<<0); # Non-existant user

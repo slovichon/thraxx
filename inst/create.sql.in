@@ -1,4 +1,4 @@
--- create.sql.in - Thraxx SQL setup routines
+-- Thraxx SQL setup routines
 -- $Id$
 
 CREATE TABLE

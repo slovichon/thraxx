@@ -1,3 +1,6 @@
+# Thraxx configuration file
+# $Id$
+
 $prefs{simult_sessions} = MULT_DISALLOW;
 
 $prefs{dbh_host}	= "@@DBH_HOST@@";
