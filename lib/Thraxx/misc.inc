@@ -56,9 +56,8 @@ sub write_config
 	);
 
 	# Update %$this?
-
-	my ($path) = ($INC{'Thraxx.pm'} =~ m!(.*/)!);
-	my $file = "$path/thraxx-config.inc.TEST";
+	my $file = $this->{config} . ".TEST";
+#	my $file = $this->{config};
 	my $output = "";
 	
 	foreach my $directive (@directives)
@@ -101,8 +100,7 @@ sub flatten_var
 		{
 			# String
 			return flatten_string($value);
-		} elsif ($value =~ /^[a-zA-Z_][a-zA-Z0-9_:]*$/ &&
-			ref $constants{$directive} eq "HASH" &&
+		} elsif (ref $constants{$directive} eq "HASH" &&
 			defined(my $key = in_hash($value, $constants{$directive}))) {
 			# Constant
 			return $key;
