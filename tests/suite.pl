@@ -4,23 +4,43 @@ use strict;
 use Thraxx;
 use WASP;
 
+sub ok()
+{
+	print "\033[1;0;32mTest succeeded\033[1;0;0m\n\n";
+}
+
+sub fail()
+{
+	print "\033[1;0;31mTest failed!\033[1;0;0m\n\n";
+	die;
+}
+
+sub princ
+{
+	print "\033[1;0;34m", @_, ":\033[1;0;0m\n";
+}
+
 my $w = WASP->new;
-$w->display(1);
+$w->die(1);
 #my $d = DBH->new();
 my $t = Thraxx->construct(wasp=>$w, dbh=>1, skip_init=>1);
 
-$\ = "\n";
-
 ########################################################################
 # crypt.inc
-print "Random alphanumeric characters: ";
-print $t->rand_str(25, Thraxx::RAND_VIS_ALNUM)	for 1 .. 3;
+princ "Random alphanumeric characters";
+eval {
+print $t->rand_str(25, Thraxx::RAND_VIS_ALNUM), "\n"	for 1 .. 3; 1
+}; $@ ? fail : ok;
 
-print "\nRandom non-quote characters: ";
-print $t->rand_str(25, Thraxx::RAND_VIS_NQ)	for 1 .. 3;
+princ "Random non-quote characters";
+eval {
+print $t->rand_str(25, Thraxx::RAND_VIS_NQ), "\n"	for 1 .. 3;
+}; $@ ? fail : ok;
 
 my $key;
 
+princ "Generating keys";
+eval {
 for (1 .. 3)
 {
 	print q[];
@@ -28,52 +48,80 @@ for (1 .. 3)
 		Thraxx::CRYPT_EXT_DES, Thraxx::CRYPT_BLOWFISH)
 	{
 		$key = $t->gen_key($type);
-		print "Generated key[$type]: $key";
+		print "[type $type]: $key\n";
 	}
 }
+}; $@ ? fail : ok;
+
+$t->{crypt_key} = $key;
 
 my $data = $t->rand_str(40, Thraxx::RAND_VIS_ALNUM);
 my $enc = $t->crypt($data);
 
-print "\nEncrypting data ($data): $enc";
+princ "Encrypting data";
+print "data: $data\nenc:  $enc\n";
+
+my $copy = $data;
+my $enc2 = $t->crypt($copy);
+
+print "copy: $copy\nenc2: $enc2\n";
+
+$enc eq $enc2 ? ok : fail;
+
 ########################################################################
 # isr.inc
 
+# isr_check_field() will be tested heavily by write_config()
 
 ########################################################################
 # misc.inc
 
-print "In array"	if	Thraxx::in_array(5, [2 .. 7]);
-print "Not in array"	unless	Thraxx::in_array(1, [2 .. 7]);
+princ "in_array()";
+print "5 in (", 2..7, ") and 1 not in (", 2..7 ,")\n";
+Thraxx::in_array(5, [2 .. 7]) && !Thraxx::in_array(1, [2 .. 7]) ? ok : fail;
+
+princ "slurp_file()";
 
 my $s="this
 is
 my
 favorite string";
 
-print "Writing string ($s) to file";
+{
+my $_t = $s;
+$_t =~ s/\n/\\n/g;
+printf "Writing to file: $_t\n";
+}
 
 open OUT, "> out";
 print OUT $s;
 close OUT;
 
-print "Retrieving file contents: ", $t->slurp_file("out");
+my $p = $t->slurp_file("out");
+{
+my $_t = $p;
+$_t =~ s/\n/\\n/g;
+print "Reading from file: $_t\n";
+}
+$s eq $p ? ok : fail;
 
+princ "write_config()";
+eval {
 $t->write_config;
-print "Config saved";
+}; $@ ? fail : ok;
 
 # Skip flatten*
 
 ########################################################################
 # users.inc
 
-my $uid = $t->user_add();
+#my $uid = $t->user_add(password=>"hi there");
 
 
 ########################################################################
 # sessions.inc
 
-my $sid = $t->session_create($uid);
+#my $sid = $t->session_create($uid);
 
 
 ########################################################################
