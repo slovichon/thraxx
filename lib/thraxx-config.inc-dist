@@ -3,16 +3,9 @@
 
 $prefs{simult_sessions} = SESSION_MULT_DISALLOW;
 
-$prefs{dbh_host}	= '@@DBH_HOST@@';
-$prefs{dbh_username}	= '@@DBH_USERNAME@@';
-$prefs{dbh_password}	= '@@DBH_PASSWORD@@';
-$prefs{dbh_database}	= '@@DBH_DATABASE@@';
-$prefs{dbh_type}	= *::foofoofoofoofoofoofoobar;#*DBH::@@DBH_TYPE@@::new;
-
-sub foofoofoofoofoofoofoobar {};
-
 $prefs{user_fields}	= {
 	#foo => {star=>"glarch"}
 };
 
 $prefs{crypt_key}	= '@@CRYPT_KEY@@';
+$prefs{timeout}		= 60 * 10; # 10 minutes
