@@ -157,6 +157,7 @@ sub flatten_hash
 sub slurp_file
 {
 	my ($this, $file) = @_;
+	$this->throw("No such file") unless defined $file and length $file;
 	local ($/, *F);
 	my $data;
 	if (open F, "< $file")

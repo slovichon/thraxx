@@ -76,6 +76,11 @@ sub construct
 
 	my $this = bless \%prefs, ref($class) || $class;
 
+	# Propagate construction
+	$this->_session_init();
+	$this->_udf_init();
+	$this->_user_init();
+
 	return $this;
 }
 
@@ -91,6 +96,7 @@ require "Thraxx/crypt.inc";
 require "Thraxx/isr.inc";
 require "Thraxx/misc.inc";
 require "Thraxx/sessions.inc";
+require "Thraxx/str.inc";
 require "Thraxx/udf.inc";
 require "Thraxx/users.inc";
 

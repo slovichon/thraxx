@@ -75,6 +75,7 @@ sub udf_update
 	my %changed = ();
 	my $mod_date;
 
+	# Grab last user-defined fields "signature"/fingerprint
 	($old_types{user_fields}, $mod_date) =
 		$this->{dbh}->query("	SELECT
 						user_fields_sig,
@@ -84,7 +85,14 @@ sub udf_update
 	my ($field_id, $field_sig, $old_fields);
 	while (($field_id, $field_sig) = each %old_types)
 	{
-		$old_fields = Storable::thaw($field_sig);
+		eval {
+			$old_fields = Storable::thaw($field_sig);
+		};
+		if ($@) {
+			$old_fields = {};
+			# Reset for subsequent and future use
+			$@ = "";
+		}
 		$old_fields = {} unless ref $old_fields eq "HASH";
 		if (hasheq($old_fields, $this->{$field_id}))
 		{
@@ -98,7 +106,7 @@ sub udf_update
 		my $file = $INC{'thraxx-config.inc'};
 		my $rmtime = Timestamp->new($mod_date)->get_unix;
 		my $lmtime = (stat $file)[9];
-		# They should never be equal...
+		# These should never be equal
 		if ($rmtime <= $lmtime)
 		{
 			# Remote timestamp is older than local

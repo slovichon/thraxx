@@ -22,7 +22,7 @@ sub user_add
 	# Validate data
 	$err |= E_USER_PASS() unless $user->{password};
 	# Validate/Prepare user-defined fields data
-	my $uerr = $this->udf_validate(FLD_USER(), $data);
+	my $uerr = $this->udf_validate(FLD_USER(), $user);
 	return ($err, $uerr) if $err != E_NONE() || @$uerr;
 	# Prepare data
 	my $password = $dbh->prepare_str($user->{password}, SQL_REG);
