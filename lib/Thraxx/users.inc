@@ -4,8 +4,7 @@
 use DBH qw(:all);
 use strict;
 
-sub _user_init
-{
+sub _user_init {
 	my ($this) = @_;
 	my $g = $this->{error_const_group};
 
@@ -16,8 +15,7 @@ sub _user_init
 	$g->add("E_USER_USERNAME");	# Bad username
 }
 
-sub user_add
-{
+sub user_add {
 	my ($this, $user) = @_;
 	return E_MISC() unless ref $user eq "HASH";
 	my $dbh = $this->{dbh};
@@ -49,8 +47,7 @@ sub user_add
 	my $sql_fields = "";
 	my $sql_values = "";
 	my ($field_id);
-	while (($field_id) = each %{ $this->{user_fields} })
-	{
+	while (($field_id) = each %{ $this->{user_fields} }) {
 		$sql_fields .= " ud_$field_id, ";
 		$sql_values .= " '$user->{$field_id}', ";
 	}
@@ -68,8 +65,7 @@ sub user_add
 	return (E_NONE(), []);
 }
 
-sub user_update
-{
+sub user_update {
 	my ($this, $user) = @_;
 	return E_MISC() unless ref $user eq "HASH";
 	my $dbh = $this->{dbh};
@@ -97,8 +93,7 @@ sub user_update
 	return (E_NONE(), []);
 }
 
-sub user_remove
-{
+sub user_remove {
 	my ($this, $user_id) = @_;
 	return E_USER_EXIST() unless $this->user_exists($user_id);
 	$this->{dbh}->query("	DELETE FROM
@@ -109,8 +104,7 @@ sub user_remove
 	return E_NONE();
 }
 
-sub user_exists
-{
+sub user_exists {
 	my ($this) = shift;
 	my ($field, $op, $value);
 	if (@_ == 1) {
@@ -133,8 +127,7 @@ sub user_exists
 						$field $op $value", DB_COL);
 }
 
-sub user_auth
-{
+sub user_auth {
 	my ($this, $username, $password) = @_;
 	my $enc = $this->crypt($password);
 	my $user = $this->user_get(field=>"username", op=>"=", value=>$username);

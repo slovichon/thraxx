@@ -1,8 +1,7 @@
 # Thraxx error-message routines
 # $Id$
 
-sub err_lookup
-{
+sub err_lookup {
 	my ($this, $err) = @_;
 	my %msgs = (
 		E_NONE()		=> "No error",

@@ -8,8 +8,7 @@ use constant SESSION_MULT_ALLOW		=> 1;
 use constant SESSION_MULT_DISALLOW	=> 2;
 use constant SESSION_MULT_CLEAR		=> 3;
 
-sub _session_init
-{
+sub _session_init {
 	my ($this) = @_;
 	my $g = $this->{error_const_group};
 
@@ -24,18 +23,15 @@ sub _session_init
 }
 
 # Front-runner
-sub session_auth
-{
+sub session_auth {
 	my ($this, $user_id, $password) = @_;
 
 	# Check for concurrent sessions
 	if (my @sessions = $this->session_search(
 		criteria => [[{	field 	=> "user_id",
 				op 	=> "=",
-				value 	=> $user_id }]]))
-	{
-		if ($this->{simult_sessions} == SESSION_MULT_ALLOW)
-		{
+				value 	=> $user_id }]])) {
+		if ($this->{simult_sessions} == SESSION_MULT_ALLOW) {
 			my $ret = $this->user_auth($user_id, $password);
 			return $ret if $ret != E_NONE();
 			return $this->session_create($user_id);
@@ -61,8 +57,7 @@ sub session_auth
 	}
 }
 
-sub session_create
-{
+sub session_create {
 	my ($this, $user_id) = @_;
 	return E_USER_EXIST() unless $this->user_exists($user_id);
 	my $dbh = $this->{dbh};
@@ -78,13 +73,12 @@ sub session_create
 				'$esc_key'
 			)", DB_NULL);
 	return {
-			session_id => $dbh->last_insert_id,
-			session_key => $key,
-		};
+		session_id => $dbh->last_insert_id,
+		session_key => $key,
+	};
 }
 
-sub _session_gen_key
-{
+sub _session_gen_key {
 	my ($this) = @_;
 	my $size = SESSION_KEY_LEN();
 	my $id;
@@ -106,8 +100,7 @@ sub session_update {
 					session_id = $id", DB_NULL);
 }
 
-sub session_remove
-{
+sub session_remove {
 	my ($this, $id) = @_;
 	return E_SESSION_EXIST() unless $this->session_exists($id);
 	$id = $this->{dbh}->prepare_str($id, SQL_REG);
@@ -124,8 +117,7 @@ sub session_remove
 # one or more `or' groups. Each `or' group should
 # contain one or more `and' group composed of one
 # or more criteria fields that must match.
-sub session_search
-{
+sub session_search {
 	my ($this, %prefs) = @_;
 	# Build database query
 	my $where = "";
@@ -163,14 +155,12 @@ sub session_search
 	return \@sessions;
 }
 
-# sub session_exists
-# {
+# sub session_exists {
 #	my ($this, $id) = @_;
 #	return $this->session_search(session_id=>$id);
 # }
 
-sub session_exists
-{
+sub session_exists {
 	my ($this, $id) = @_;
 	return FALSE() unless $id && $id =~ /^\d+$/;
 	return $this->{dbh}->query("	SELECT
@@ -181,14 +171,12 @@ sub session_exists
 						session_id = $id", DB_COL);
 }
 
-# sub sessions
-# {
+# sub sessions {
 #	my ($this) = @_;
 #	return $this->session_search();
 # }
 
-sub sessions
-{
+sub sessions {
 	my ($this) = @_;
 	my $dbh = $this->{dbh};
 	return $dbh->query("	SELECT
@@ -205,8 +193,7 @@ sub sessions
 #				value	=> $id }]]);
 # }
 
-sub session_get
-{
+sub session_get {
 	my ($this, $id) = @_;
 	return E_SESSION_EXIST() unless $this->session_exists($id);
 	return $this->{dbh}->query("	SELECT

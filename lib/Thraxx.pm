@@ -17,8 +17,7 @@ use constant FALSE => 0;
 
 use constant SESSION_KEY_LEN => 20;
 
-sub new
-{
+sub new {
 	my $class = shift;
 	my %prefs = (
 		wasp  => WASP->new,
@@ -51,8 +50,7 @@ sub new
 	return construct($class, %prefs);
 }
 
-sub construct
-{
+sub construct {
 	my ($class, %prefs) = @_;
 
 	# Error-check our environment
@@ -64,8 +62,7 @@ sub construct
 	$prefs{error_const_group} = AutoConstantGroup->new;
 	$prefs{error_const_group}->add("E_MISC");	# Miscellaneous errors
 
-	unless (tied %prefs)
-	{
+	unless (tied %prefs) {
 		# Strict-preference setting
 		tie %prefs, 'Thraxx::Prefs', %prefs;
 
@@ -85,8 +82,7 @@ sub construct
 	return $this;
 }
 
-sub throw
-{
+sub throw {
 	my ($this) = shift;
 	my $msg = "Thraxx error: " . join '', @_;
 
@@ -103,30 +99,25 @@ require "Thraxx/users.inc";
 
 package Thraxx::Prefs;
 
-sub TIEHASH
-{
+sub TIEHASH {
 	my ($class, %prefs) = @_;
 	return bless \%prefs, $class
 }
 
-sub EXISTS
-{
+sub EXISTS {
 	my ($this, $k) = @_;
 	return exists $this->{$k};
 }
 
-sub FETCH
-{
+sub FETCH {
 	my ($this, $k) = @_;
-	unless (exists $this->{$k})
-	{
+	unless (exists $this->{$k}) {
 		$this->{wasp}->throw("Requested Thraxx directive not set; directive: $k");
 	}
 	return $this->{$k};
 }
 
-sub STORE
-{
+sub STORE {
 	my ($this, $k, $v) = @_;
 	# Value-type and directive name checking?
 	$this->{$k} = $v;

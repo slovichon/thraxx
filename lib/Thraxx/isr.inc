@@ -7,24 +7,33 @@ use strict;
 use constant ISR_TYPE_STR => 1;
 use constant ISR_TYPE_NUM => 2;
 
-sub isr_check_field
-{
+sub isr_check_field {
 	my ($this, $table, $field, $op, $val) = @_;
 
-	my $num = sub { $_[0] && $_[0] =~ /^\d+$/ ? $_[0] : 0 };
+	my $esc_num = sub {
+		return $_[0] && $_[0] =~ /^\d+$/ ? $_[0] : 0;
+	};
+
+	my $esc_wild = sub {
+		return q(') . $this->{dbh}->prepare_str($_[0], SQL_WILD) . q(');
+	};
+
+	my $esc_reg = sub {
+		return q(') . $this->{dbh}->prepare_str($_[0], SQL_REG) . q(');
+	};
 
 	my %ops = (
 		ISR_TYPE_NUM()	=> {
-			'='	=> $num,
-			'<'	=> $num, 
-			'>'	=> $num,
-			'<='	=> $num,
-			'>='	=> $num,
-			'<>'	=> $num,
+			'='	=> $esc_num,
+			'<'	=> $esc_num, 
+			'>'	=> $esc_num,
+			'<='	=> $esc_num,
+			'>='	=> $esc_num,
+			'<>'	=> $esc_num,
 		},
 		ISR_TYPE_STR()	=> {
-			'LIKE'	=> sub { "'".$this->{dbh}->prepare_str($_[0], SQL_WILD)."'" },
-			'='	=> sub { "'".$this->{dbh}->prepare_str($_[0], SQL_REG) ."'" },
+			'LIKE'	=> $esc_wild,
+			'='	=> $esc_reg,
 		},
 	);
 
