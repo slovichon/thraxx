@@ -17,8 +17,6 @@ use constant FALSE => 0;
 
 use constant SESSION_KEY_LEN => 20;
 
-our %prefs = ();
-
 sub new
 {
 	my $class = shift;
