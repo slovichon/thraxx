@@ -3,15 +3,17 @@
 use strict;
 use Thraxx;
 use WASP;
+use DBH qw(:all);
+use DBH::MySQL;
 
 sub ok()
 {
-	print "\033[1;0;32mTest succeeded\033[1;0;0m\n\n";
+	print "\033[1;40;32mTest succeeded\033[1;0;0m\n\n";
 }
 
 sub fail()
 {
-	print "\033[1;0;31mTest failed!\033[1;0;0m\n\n";
+	print "\033[1;40;31mTest failed!\033[1;0;0m\n\n";
 	die;
 }
 
@@ -22,8 +24,10 @@ sub princ
 
 my $w = WASP->new;
 $w->die(1);
-#my $d = DBH->new();
-my $t = Thraxx->construct(wasp=>$w, dbh=>1, skip_init=>1);
+my $d = DBH::MySQL->new(host=>"12.226.98.118", username=>"thraxx",
+		password=>"lNBDOD92Pec", database=>"thraxx",
+		wasp=>$w);
+my $t = Thraxx->construct(wasp=>$w, dbh=>$d, skip_init=>1);
 
 my ($s, $p, $i, $j, $k);
 
@@ -112,7 +116,25 @@ $t->write_config;
 ########################################################################
 # users.inc
 
-#my $uid = $t->user_add(password=>"hi there");
+princ "Creating user";
+my ($err, $uerr) = $t->user_add({password=>"hi there"});
+my $user_id = $d->last_insert_id;
+print "Errors: $err\nUser errors: @$uerr\nUser ID: $user_id\n";
+$err == Thraxx::E_NONE() && @$uerr == 0 ? ok : fail;
+
+princ "Changing password";
+($err, $uerr) = $t->user_update({user_id=>$user_id, password=>"new pass"});
+print "Errors: $err\nUser errors: @$uerr\n";
+$err == Thraxx::E_NONE() && @$uerr == 0 ? ok : fail;
+
+princ "user_exists()";
+$t->user_exists($user_id) ? ok : fail;
+$t->user_exists(-1) ? fail : ok;
+$t->user_exists(5) ? fail : ok;
+
+princ "user_auth()";
+($k=$t->user_auth($user_id, "new pass")) ? (print($k),fail) : ok;
+($k=$t->user_auth($user_id, "bad pass")) ? ok : (print($k),fail);
 
 ########################################################################
 # str.inc
@@ -130,15 +152,26 @@ $p eq $k ? ok : fail;
 ########################################################################
 # sessions.inc
 
-#my $sid = $t->session_create($uid);
+princ "Creating session";
+my $session = $t->session_create($user_id);
+print "Session ID: $session->{session_id}\nSession key: $session->{session_key}\n";
+ref $session eq "HASH" ? ok : fail;
 
+princ "Session size";
+length($session->{session_key}) == Thraxx::SESSION_KEY_LEN() ? ok : fail;
+
+princ "session_exists()";
+$t->session_exists($session->{session_id}) ? ok : fail;
+
+princ "Removing session";
+$t->session_remove($session->{session_id}) ? fail : ok;
+
+princ "Removing user";
+$t->user_remove($user_id) ? fail : ok;
 
 ########################################################################
 # udf.inc
-
-
-
-
-
+# Note: this will be tested with custom fields
+# in users.inc and sessions.inc tests.
 
 exit 0;
