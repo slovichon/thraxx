@@ -5,3 +5,4 @@ create a constant creator?
 	my $t = Thraxx->new;
 	my $g = $t->const_group_create();
 	$t->register_constant("E_USER_*", $g);
+after a new user is created (signed up), require login from that user?
