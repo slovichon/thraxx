@@ -96,7 +96,7 @@ sub udf_update
 			$@ = "";
 		}
 		$old_fields = {} unless ref $old_fields eq "HASH";
-		if (hasheq($old_fields, $this->{$field_id}))
+		if ($this->hasheq($old_fields, $this->{$field_id}))
 		{
 			$change = TRUE();
 			$changed{$field_id} = $old_fields;
