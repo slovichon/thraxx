@@ -51,9 +51,8 @@ sub in_hash
 sub write_config
 {
 	my ($this) = @_;
-	my @directives = qw( simult_sessions dbh_host
-		dbh_username dbh_password dbh_type
-		dbh_database user_fields crypt_key
+	my @directives = qw( simult_sessions
+		user_fields crypt_key timeout
 	);
 
 	# Update %$this?
@@ -86,10 +85,10 @@ EOF
 sub flatten_var
 {
 	my ($this, $directive, $value) = @_;
-	my @strings = qw(dbh_username dbh_password
-		dbh_database dbh_host crypt_key);
-	my @globs = qw(dbh_type);
+	my @strings = qw(crypt_key);
 	my @hashes = qw(user_fields);
+	my @globs = qw();
+	my @numbers = qw(timeout);
 	my %constants = (
 		simult_sessions => {
 			SESSION_MULT_ALLOW	=> SESSION_MULT_ALLOW(),
@@ -97,23 +96,27 @@ sub flatten_var
 			SESSION_MULT_CLEAR	=> SESSION_MULT_CLEAR(),
 		},
 	);
-	if (ref \$value eq "SCALAR" && in_array($directive, \@strings))
-	{
-		# String
-		return flatten_string($value);
-	} elsif ($value =~ /^[a-zA-Z0-9:]+$/ && ref $constants{$directive} eq "HASH" &&
-		defined(my $key = in_hash($value, $constants{$directive}))) {
-		# Constant
-		return $key;
+	if (ref \$value eq "SCALAR") {
+		if (in_array($directive, \@strings))
+		{
+			# String
+			return flatten_string($value);
+		} elsif ($value =~ /^[a-zA-Z_][a-zA-Z0-9_:]*$/ &&
+			ref $constants{$directive} eq "HASH" &&
+			defined(my $key = in_hash($value, $constants{$directive}))) {
+			# Constant
+			return $key;
+		} elsif ($value =~ /^\d+$/ && in_array($directive, \@numbers)) {
+			return $value;
+		}
 	} elsif (ref \$value eq "GLOB" && in_array($directive, \@globs)) {
 		# Typeglob
 		return $value;
 	} elsif (ref $value eq "HASH" && in_array($directive, \@hashes)) {
 		# Hash
 		return flatten_hash($value);
-	} else {
-		$this->throw("Invalid directive/directive value; directive: $directive; value: $value");
 	}
+	$this->throw("Invalid directive/directive value; directive: $directive; value: $value");
 }
 
 sub flatten_string
