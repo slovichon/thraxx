@@ -5,6 +5,7 @@ package Thraxx;
 use DBH qw(:all);
 use Timestamp;
 use WASP;
+use AutoConstantGroup;
 use strict;
 
 our $VERSION = 0.1;
@@ -59,6 +60,9 @@ sub construct
 	# Error-check our environment
 	die("No WASP object specified")		unless $prefs{wasp};
 	$prefs{wasp}->throw("No DBH specified")	unless $prefs{dbh};
+
+	# Set other properties
+	$prefs{error_const_group} = AutoConstantGroup->new;
 
 	unless (tied %prefs)
 	{
