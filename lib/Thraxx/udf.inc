@@ -15,7 +15,7 @@ use constant FLD_USER => 1;
 sub _udf_init
 {
 	my $this = shift;
-	$this->udf_update unless $this->{skip_init};
+	$this->udf_update unless exists $this->{skip_init} && $this->{skip_init};
 }
 
 sub udf_validate
