@@ -71,7 +71,7 @@ sub construct
 		# Fill up %prefs
 		my ($path) = ($INC{'Thraxx.pm'} =~ m!(.*/)!);
 		eval slurp_file($prefs{wasp}, "$path/thraxx-config.inc") or
-			$prefs->{wasp}->throw("Thraxx: cannot read config file: $@");
+			$prefs{wasp}->throw("Thraxx: cannot read config file: $@");
 	}
 
 	my $this = bless \%prefs, ref($class) || $class;
