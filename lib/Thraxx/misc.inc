@@ -48,6 +48,18 @@ sub in_hash
 	return undef;
 }
 
+sub hasheq {
+	my ($this, $a, $b) = @_;
+	$this->throw("hasheq: arg 1 is not a hashref") unless ref $a eq "HASH";
+	$this->throw("hasheq: arg 2 is not a hashref") unless ref $b eq "HASH";
+	my %c = %$a;
+	my ($k, $v);
+	while (($k, $v) = each %$b) {
+		delete $c{$k} if exists $c{$k} && $c{$k} eq $v;
+	}
+	return %c == 0;
+}
+
 sub write_config
 {
 	my ($this) = @_;
