@@ -1,5 +1,6 @@
 # Thraxx user routines
 # $Id$
+use strict;
 
 use constant E_USER_EXIST => (001<<0); # Non-existant user
 
@@ -54,4 +55,4 @@ sub user_exists
 					user_id = $user_id", DB_COL);
 }
 
-return 1;
+return TRUE();

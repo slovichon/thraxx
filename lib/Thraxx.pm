@@ -3,6 +3,8 @@
 package Thraxx;
 
 use DBH qw(:all);
+use Timestamp;
+use WASP;
 use strict;
 
 our $VERSION = 0.1;
@@ -12,16 +14,20 @@ use constant E_NONE => 0;
 use constant TRUE  => 1;
 use constant FALSE => 0;
 
+use constant SESSION_KEY_LEN => 20;
+
+our %prefs = ();
+
 sub new
 {
 	my $class = shift;
 	my %prefs = (
-		wasp  => WASP->new(),
+		wasp  => WASP->new,
 	);
 
 	# Fill up %prefs
-	delete $INC{"babs-config.inc"} if exists $INC{"babs-config.inc"};
-	require "babs-config.inc";
+	my ($path) = ($INC{'Thraxx.pm'} =~ m!(.*/)!);
+	eval slurp_file($prefs{wasp}, "$path/thraxx-config.inc");
 
 	# Initialize DBH
 	{
@@ -51,16 +57,20 @@ sub construct
 	my ($class, %prefs) = @_;
 
 	# Error-check our environment
-	die("No WASP object specified")	unless $prefs{wasp};
-	$prefs{wasp}->throw("No DBH specified")		unless $prefs{dbh};
+	die("No WASP object specified")		unless $prefs{wasp};
+	$prefs{wasp}->throw("No DBH specified")	unless $prefs{dbh};
 
-	# Strict-preference setting
-	tie %prefs, 'Thrax::Prefs', %prefs;
+	unless (tied %prefs)
+	{
+		# Strict-preference setting
+		tie %prefs, 'Thrax::Prefs', %prefs;
 
-	# This should fill up %prefs
-	delete $INC{"babs-config.inc"} if exists $INC{"babs-config.inc"};
-	require "babs-config.inc";
+		# Fill up %prefs
+		my ($path) = ($INC{'Thraxx.pm'} =~ m!(.*/)!);
+		eval slurp_file($prefs{wasp}, "$path/thraxx-config.inc");
+	}
 
+	my $this = bless \%prefs, ref($class) || $class;
 
 	return $this;
 }
@@ -73,10 +83,12 @@ sub throw
 	$this->{wasp}->throw($msg);
 }
 
-require "crypt.inc";
-require "misc.inc";
-require "sessions.inc";
-require "users.inc";
+require "Thraxx/crypt.inc";
+require "Thraxx/isr.inc";
+require "Thraxx/misc.inc";
+require "Thraxx/sessions.inc";
+require "Thraxx/udf.inc";
+require "Thraxx/users.inc";
 
 package Thrax::Prefs;
 
