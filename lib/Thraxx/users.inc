@@ -1,5 +1,6 @@
 # Thraxx user routines
 # $Id$
+
 use strict;
 
 sub _user_init
@@ -89,13 +90,30 @@ sub user_remove
 sub user_exists
 {
 	my ($this, $user_id) = @_;
-	return FALSE() unless defined $user_id && $user_id =~ /^\d+$/;
+	return FALSE() unless $user_id && $user_id =~ /^\d+$/;
 	return $this->{dbh}->query("	SELECT
 					user_id
 				FROM
 					thraxx_users
 				WHERE
 					user_id = $user_id", DB_COL);
+}
+
+sub user_auth
+{
+	my ($this, $user_id, $password) = @_;
+	return E_USER_EXIST() unless $this->user_exists($user_id);
+	my $dbh = $this->{dbh};
+	$password = $dbh->prepare_str($this->crypt($password), SQL_REG);
+	my $ret = $dbh->query("	SELECT
+					user_id
+				FROM
+					thraxx_users
+				WHERE
+					user_id = $user_id
+				AND	password = '$password' ", DB_COL);
+	return E_USER_PASS() unless $ret;
+	return E_NONE();
 }
 
 return TRUE();
