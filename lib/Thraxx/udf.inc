@@ -105,7 +105,7 @@ sub udf_update
 
 	if ($change)
 	{
-		my $file = $INC{'thraxx-config.inc'};
+		my $file = $this->{config};
 		my $rmtime = Timestamp->new($mod_date)->get_unix;
 		my $lmtime = (stat $file)[9];
 		# These should never be equal
