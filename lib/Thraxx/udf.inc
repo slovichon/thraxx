@@ -80,7 +80,7 @@ sub udf_update
 	# Grab last user-defined fields "signature"/fingerprint
 	($old_types{user_fields}, $mod_date) =
 		$this->{dbh}->query("	SELECT
-						user_fields_sig,
+						user_sig,
 						mod_date
 					FROM
 						thraxx_config", DB_ROW);
@@ -196,14 +196,14 @@ sub udf_update_db
 		$dbh->query("	UPDATE
 					thraxx_config
 				SET
-					user_fields_sig		= '$sigs{user_fields}',
-					mod_date		= NOW()", DB_NULL);
+					user_sig = '$sigs{user_fields}',
+					mod_date = NOW()", DB_NULL);
 	} else {
 		# Doesn't exist; insert
 		$dbh->query("	INSERT INTO
 					thraxx_config
 				(
-					user_fields_sig,
+					user_sig,
 					mod_date
 				) VALUES (
 					'$sigs{user_fields}',
