@@ -2,54 +2,61 @@
 -- $Id$
 
 CREATE TABLE
-        loginsys_users
+	thraxx_users
 (
-        user_id         INT                     NOT NULL        AUTO_INCREMENT,
-        password        CHAR(@@PASS_LEN@@)      NOT NULL,
+	user_id			INT			NOT NULL	AUTO_INCREMENT,
+	password		CHAR(@@PASS_LEN@@)      NOT NULL,
 
-        last_logon      TIMESTAMP,
+/*	last_logon		TIMESTAMP, */
 
-        PRIMARY KEY(user_id),
-        UNIQUE(user_id)
+	PRIMARY KEY(user_id),
+	UNIQUE(user_id)
 );
 
 /*
-        -- Perhaps we should create a history/log of logons?
+	-- Perhaps we should create a history/log of logons?
 
 CREATE TABLE
-        loginsys_logons
+	thraxx_history
 (
-        user_id         INT                     NOT NULL,
+	user_id		INT		NOT NULL,
 
-        -- duration in seconds
-        duration        INT                     NOT NULL,
-        create_date     TIMESTAMP,
+	-- duration in seconds
+	duration	INT		NOT NULL,
+	create_date	TIMESTAMP,
 
-        INDEX(user_id)
+	INDEX(user_id)
 );
 */
 
 CREATE TABLE
-        loginsys_sessions
+	thraxx_sessions
 (
-        session_id      INT                     NOT NULL        AUTO_INCREMENT,
-        user_id         INT                     NOT NULL,
-                
-        session_key     CHAR(@@SESS_KEY_LEN@@)  NOT NULL,
+	session_id	INT				NOT NULL	AUTO_INCREMENT,
+	user_id		INT				NOT NULL,
 
-        create_date     TIMESTAMP,
-        act_ts          TIMESTAMP,
+	session_key     CHAR(@@SESSION_KEY_LEN@@)	NOT NULL,
 
-        -- is_hidden    BOOL                    NOT NULL                                DEFAULT 0,
+	create_date     TIMESTAMP,
+	act_ts		TIMESTAMP,
 
-        PRIMARY KEY(session_id),
-        UNIQUE(session_id),
-        INDEX(user_id)--,
-        -- UNIQUE(user_id)
+	-- is_hidden    BOOL				NOT NULL			DEFAULT 0,
+
+	PRIMARY KEY(session_id),
+	UNIQUE(session_id),
+	INDEX(user_id)--,
+	-- UNIQUE(user_id)
 );
 
 CREATE TABLE
-        loginsys_config
+	thraxx_config
 (
-        crypt_key       CHAR(@@CRYPT_KEY_LEN@@),
+	/* User-defined fields signature/fingerprint */
+	user_sig	SMALLTEXT,
+
+	/* Last modification date */
+	mod_date	TIMESTAMP,
+
+	/* Fingerprint of crypto key */
+	crypt_key	CHAR(@@CRYPT_KEY_LEN@@),
 );
