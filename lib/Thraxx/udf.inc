@@ -154,7 +154,7 @@ sub udf_update_db
 
 		while (($field_id, $field) = each %$old_fields)
 		{
-			if (exists $diff{$field_id} && hasheq($diff{$field_id}, $field))
+			if (exists $diff{$field_id} && $this->hasheq($diff{$field_id}, $field))
 			{
 				# Field exists in both; remove
 				delete $diff{$field_id};
