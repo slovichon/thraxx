@@ -1,5 +1,7 @@
--- Thraxx SQL setup routines
--- $Id$
+/*
+ * Thraxx SQL setup routines
+ * $Id$
+ */
 
 CREATE TABLE
 	thraxx_users
@@ -40,23 +42,28 @@ CREATE TABLE
 	create_date     TIMESTAMP,
 	act_ts		TIMESTAMP,
 
-	-- is_hidden    BOOL				NOT NULL			DEFAULT 0,
+/*	is_hidden    BOOL				NOT NULL			DEFAULT 0, */
 
 	PRIMARY KEY(session_id),
 	UNIQUE(session_id),
-	INDEX(user_id)--,
-	-- UNIQUE(user_id)
+	INDEX(user_id)
+	
+	/* This field is if installations will allow multiple
+	   logons. Note that this is currently being taken
+	   care of manually. */
+/* ,	UNIQUE(user_id) */
+
 );
 
 CREATE TABLE
 	thraxx_config
 (
 	/* User-defined fields signature/fingerprint */
-	user_sig	SMALLTEXT,
+	user_sig	TINYTEXT,
 
 	/* Last modification date */
 	mod_date	TIMESTAMP,
 
 	/* Fingerprint of crypto key */
-	crypt_key	CHAR(@@CRYPT_KEY_LEN@@),
+	crypt_key	CHAR(@@CRYPT_KEY_LEN@@)
 );
