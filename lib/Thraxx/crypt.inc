@@ -1,5 +1,6 @@
 # Thraxx crypto routines
 # $Id$
+
 use strict;
 
 use constant RAND_VIS_NQ	=> 1;
