@@ -6,7 +6,14 @@ use constant SESSION_MULT_ALLOW		=> 1;
 use constant SESSION_MULT_DISALLOW	=> 2;
 use constant SESSION_MULT_CLEAR		=> 3;
 
-use constant E_SESSION_EXIST => (001<<5); # Non-existant session
+sub _session_init
+{
+	my ($this) = @_;
+	my $g = $this->{error_const_group};
+
+	# Error constants
+	$g->add("E_SESSION_EXIST"); # Non-existant session
+}
 
 # Front-runner
 sub session_auth
@@ -45,7 +52,7 @@ sub __gen_key
 sub session_remove
 {
 	my ($this, $id) = @_;
-	return E_SESSION_EXIST unless $this->session_exists($id);
+	return E_SESSION_EXIST() unless $this->session_exists($id);
 	$id = $this->{dbh}->prepare_str($id, SQL_REG);
 	$this->{dbh}->query("	DELETE FROM
 					thraxx_sessions
