@@ -7,6 +7,7 @@
 #	keywords.
 
 use Storable;
+use DBH qw(:all);
 use strict;
 
 use constant FLD_USER => 1;
