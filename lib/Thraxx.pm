@@ -100,7 +100,7 @@ require "Thraxx/str.inc";
 require "Thraxx/udf.inc";
 require "Thraxx/users.inc";
 
-package Thrax::Prefs;
+package Thraxx::Prefs;
 
 sub TIEHASH
 {
