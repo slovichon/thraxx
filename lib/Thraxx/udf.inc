@@ -22,7 +22,7 @@ sub udf_validate
 	my @errs = ();
 	my %flds = ();
 	my %map = (
-		FLD_USER => "user_fields",
+		FLD_USER() => "user_fields",
 	);
 
 	$this->throw("Unrecognized field type; type: $type") unless exists $map{$type};
