@@ -1,4 +1,5 @@
 #!/usr/bin/perl -W
+# $Id$
 
 use strict;
 use Thraxx;
@@ -6,14 +7,11 @@ use WASP;
 use DBH qw(:all);
 use DBH::MySQL;
 
-
-
 sub _ {
 	if ($_[0]) {
 		print "\033[1;40;32mTest succeeded\033[1;0;0m\n\n";
 	} else {
-		print "\033[1;40;31mTest failed!\033[1;0;0m\n\n";
-		die;
+		die "\033[1;40;31mTest failed!\033[1;0;0m\n\n";
 	}
 }
 
@@ -21,12 +19,17 @@ sub test {
 	print "\033[1;40;34m", @_, ":\033[1;0;0m\n";
 }
 
+sub mydie {
+	_ 0;
+}
+
 my $w = WASP->new;
 $w->die(1);
-my $d = DBH::MySQL->new(host=>"12.226.98.118", username=>"thraxx",
+$w->handler(\&mydie);
+my $d = DBH::MySQL->new(host=>"12.227.108.231", username=>"thraxx",
 		password=>"lNBDOD92Pec", database=>"thraxx",
 		wasp=>$w);
-my $t = Thraxx->construct(wasp=>$w, dbh=>$d, skip_init=>1);
+my $t = Thraxx->construct(wasp=>$w, dbh=>$d, skip_init=>1, config=>"thraxx-config.inc");
 
 my ($s, $p, $i, $j, $k);
 
@@ -48,18 +51,18 @@ my $key;
 
 test "Generating keys";
 eval {
-for (1 .. 3)
-{
-	print q[];
-	foreach my $type (Thraxx::CRYPT_DES, Thraxx::CRYPT_MD5,
-		Thraxx::CRYPT_EXT_DES, Thraxx::CRYPT_BLOWFISH)
+	for (1 .. 3)
 	{
-		$key = $t->gen_key($type);
-		print "[type $type]: $key\n";
+		print q[];
+		foreach my $type (Thraxx::CRYPT_DES, Thraxx::CRYPT_MD5,
+			Thraxx::CRYPT_EXT_DES, Thraxx::CRYPT_BLOWFISH)
+		{
+			$key = $t->gen_key($type);
+			print "[type $type]: $key\n";
+		}
 	}
-}
 };
-_ $@;
+_ !$@;
 
 $t->{crypt_key} = $key;
 
@@ -109,10 +112,8 @@ print "Reading from file: $k\n";
 _ $s eq $p;
 
 test "write_config()";
-eval {
 $t->write_config;
-};
-_ !$@;
+_ 1;
 
 # Skip flatten*
 
@@ -120,7 +121,7 @@ _ !$@;
 # users.inc
 
 test "Creating user";
-my ($err, $uerr) = $t->user_add({password=>"hi there"});
+my ($err, $uerr) = $t->user_add({password=>"hi there", username=>"justatest"});
 my $user_id = $d->last_insert_id;
 print "Errors: $err\nUser errors: @$uerr\nUser ID: $user_id\n";
 _ $err == Thraxx::E_NONE() && @$uerr == 0;
@@ -132,12 +133,12 @@ _ $err == Thraxx::E_NONE() && @$uerr == 0;
 
 test "user_exists()";
 _ $t->user_exists($user_id);
-_ $t->user_exists(-1);
-_ $t->user_exists(5);
+_ !$t->user_exists(-1);
+_ !$t->user_exists(5);
 
 test "user_auth()";
-_ !$t->user_auth($user_id, "new pass");
-_ $t->user_auth($user_id, "bad pass");
+_  $t->user_auth("justatest", "new pass");
+_ !$t->user_auth("justatest", "bad pass");
 
 ########################################################################
 # str.inc
